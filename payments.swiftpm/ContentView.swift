@@ -1,6 +1,5 @@
 import SwiftUI
 
-// Transaction and Enum for TransactionType
 struct Transaction: Identifiable, Codable {
     let id = UUID()
     let type: TransactionType
@@ -13,7 +12,7 @@ enum TransactionType: String, Codable {
     case received = "Received"
     case group = "Group"
     case receipt = "Receipt"
-    case request = "Request"  // New case for requesting money
+    case request = "Request"  
 
     var iconName: String {
         switch self {
@@ -21,7 +20,7 @@ enum TransactionType: String, Codable {
         case .received: return "arrow.down.circle"
         case .group: return "person.3"
         case .receipt: return "doc.text"
-        case .request: return "arrow.right.circle"  // Icon for request
+        case .request: return "arrow.right.circle" 
         }
     }
 
@@ -31,7 +30,7 @@ enum TransactionType: String, Codable {
         case .received: return .green
         case .group: return .blue
         case .receipt: return .yellow
-        case .request: return .orange  // Color for request
+        case .request: return .orange 
         }
     }
 }
@@ -41,7 +40,7 @@ class AppData: ObservableObject {
     @Published var transactions: [Transaction] = []
     @Published var lastReceiptTotal: Double = 0.0
     @Published var groups: [Group] = [Group(name: "Group 1", members: ["Alice", "Bob"]),
-                                       Group(name: "Group 2", members: ["Charlie"])] // Placeholder for group names and members
+                                       Group(name: "Group 2", members: ["Charlie"])] 
 
     func saveBalance() {
         if let encoded = try? JSONEncoder().encode(balance) {
@@ -160,7 +159,7 @@ struct TransactionsView: View {
             appData.balance -= value
             let transaction = Transaction(type: .sent, description: paymentDescription.isEmpty ? "Payment sent" : paymentDescription, amount: value)
             appData.transactions.insert(transaction, at: 0)
-            appData.saveTransactions()  // Save after a transaction
+            appData.saveTransactions()  
             amount = ""
             paymentDescription = ""
         }
@@ -191,13 +190,12 @@ struct TransactionRow: View {
     }
 }
 
-// Groups Tab
 struct GroupsView: View {
     @EnvironmentObject var appData: AppData
     @State private var newGroupName: String = ""
     @State private var newMemberName: String = ""
     @State private var selectedGroupIndex: Int? = nil
-    @State private var requestAmount: String = ""  // Input for requested amount
+    @State private var requestAmount: String = ""  
 
     var body: some View {
         VStack {
@@ -225,8 +223,6 @@ struct GroupsView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
 
-                        // Button to request money from the group
-                        // Inside the GroupsView struct
                         Button("Request Money from Group") {
                             if let amount = Double(requestAmount), amount > 0 {
                                 requestMoneyFromGroup(groupIndex: index, amount: amount)
@@ -242,7 +238,6 @@ struct GroupsView: View {
                 }
             }
 
-            // Add Group
             TextField("New Group Name", text: $newGroupName)
                 .padding()
                 .background(Color.white.opacity(0.1))
@@ -257,7 +252,6 @@ struct GroupsView: View {
             .foregroundColor(.white)
             .cornerRadius(10)
 
-            // Edit Group
             if let index = selectedGroupIndex {
                 TextField("New Member Name", text: $newMemberName)
                     .padding()
@@ -273,7 +267,6 @@ struct GroupsView: View {
                 .foregroundColor(.white)
                 .cornerRadius(10)
 
-                // Request money input field and button
                 TextField("Request Amount", text: $requestAmount)
                     .padding()
                     .background(Color.white.opacity(0.1))
@@ -314,10 +307,8 @@ struct GroupsView: View {
     func requestMoneyFromGroup(groupIndex: Int, amount: Double) {
         let group = appData.groups[groupIndex]
 
-        // Calculate the total requested amount based on how much to ask from each member
         let totalRequestedAmount = amount / Double(group.members.count)
 
-        // Loop through each member and create a "Request" transaction
         for member in group.members {
             let transaction = Transaction(
                 type: .request,
@@ -327,18 +318,15 @@ struct GroupsView: View {
             appData.transactions.insert(transaction, at: 0)
         }
 
-        // Subtract the total requested amount from the balance (if necessary)
         appData.balance -= totalRequestedAmount * Double(group.members.count)
 
-        // Save the transactions and balance after processing
         appData.saveTransactions()
-        appData.saveBalance()  // If you need to save the balance separately
+        appData.saveBalance()  
     }
 
 
 }
 
-// Chatbot Tab
 struct ChatbotView: View {
     @State private var userMessage: String = ""
     @State private var chatbotResponse: String = "Hello! How can I help you?"
@@ -378,13 +366,11 @@ struct ChatbotView: View {
     }
 
     func sendMessage() {
-        // For now, just echo back the message with a basic response
         chatbotResponse = "You said: \(userMessage)\nChatbot: How can I assist you further?"
         userMessage = ""
     }
 }
 
-// Receipt Scanner Tab
 struct ReceiptScannerView: View {
     @EnvironmentObject var appData: AppData
     @State private var scannedAmount: String = ""
@@ -413,7 +399,6 @@ struct ReceiptScannerView: View {
     }
 
     func scanReceipt() {
-        // Simulate a receipt scan by deducting a random value
         let randomAmount = Double.random(in: 5...100)
         appData.balance -= randomAmount
         appData.transactions.insert(Transaction(type: .receipt, description: "Receipt scanned", amount: randomAmount), at: 0)
@@ -431,8 +416,8 @@ struct VenmoAIApp: App {
                 .environmentObject(appData)
                 .preferredColorScheme(.dark)
                 .onAppear {
-                    appData.loadTransactions()  // Load transactions on app start
-                    appData.loadGroups()       // Load groups on app start
+                    appData.loadTransactions()  
+                    appData.loadGroups()       
                 }
         }
     }
